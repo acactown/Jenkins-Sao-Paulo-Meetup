@@ -1,0 +1,7 @@
+apply plugin: 'groovy'
+
+dependencies {
+    final GROOVY_VERSION = '2.1.7'
+
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: GROOVY_VERSION
+}
