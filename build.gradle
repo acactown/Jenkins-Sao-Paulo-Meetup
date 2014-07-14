@@ -1,0 +1,106 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+project.ext {
+    if (project.hasProperty("prod") || project.hasProperty("qa")) {
+        versionSuffix = ''
+    } else {
+        snapshot = true
+        versionSuffix = '-dev'
+    }
+
+    def proc = "git rev-parse HEAD".execute()
+    commit = proc.text.trim()
+    releaseNumber = '1.0'
+    revision = releaseNumber + "-" + commit
+
+    if (project.hasProperty('snapshot')) {
+        release = '-SNAPSHOT'
+    } else {
+        release = ''
+    }
+}
+
+ext {
+    SPRING_VERSION = '3.2.1.RELEASE'
+
+    //Environment specific properties. -Pprod builds production
+    if (project.hasProperty("prod")) {
+        environment = 'prod'
+        logLevel = 'WARN'
+    } else if (project.hasProperty("qa")) {
+        // adapt configuration to qa environment
+        environment = 'qa'
+        logLevel = 'WARN'
+    } else {
+        // adapt configuration to dev environment
+        environment = 'dev'
+        logLevel = 'DEBUG'
+    }
+}
+
+group = 'com.vivareal'
+version = "${revision}${versionSuffix}${release}"
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven {
+            url nexusUrl
+            credentials {
+                username nexusUser
+                password nexusPassword
+            }
+        }
+        maven {
+            url "http://repo.grails.org/grails/core/"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.connorgarvey.gradle:gradle-grails-wrapper:1.0.1'
+        classpath 'com.vivareal.build.gradle:elastic-beanstalk:1.0.5'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    [ compileJava, compileTestJava ]*.options*.encoding = 'UTF-8'
+
+    group = rootProject.group
+    version = rootProject.version
+    sourceCompatibility = '1.7'
+
+    processResources.outputs.upToDateWhen { false }
+
+    repositories {
+        maven {
+            url nexusUrl
+            credentials {
+                username nexusUser
+                password nexusPassword
+            }
+        }
+    }
+
+    project.ext {
+        //Environment specific properties. -Pprod and -Pqa builds production
+        if (project.hasProperty("prod") || project.hasProperty("qa")) {
+            // adapt sub project configuration to prod environment
+            propertiesFile = project.name + '-prod.properties'
+        } else {
+            // adapt configuration to dev environment
+            propertiesFile = project.name + '-dev.properties'
+        }
+    }
+
+    processResources {
+        filter(ReplaceTokens, tokens: [
+                propertiesFile: propertiesFile,
+                environment: environment,
+                logLevel: logLevel
+        ])
+    }
+
+
+}

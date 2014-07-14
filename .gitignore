@@ -1,12 +1,33 @@
 *.class
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+.metadata
 *.jar
 *.war
 *.ear
+*.orig
+*.iml
+.gradle
+.classpath
+.settings
+.project
+.idea
+.nb-gradle-properties
+.DS_Store
+build
+bin
+target
+target-eclipse
+private
+logs
+out
+log.fmpp
+_git.gsp
+activemq-data
+activemq
+rebel.xml
+
+classes/
+tlog.*
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+/activemq/
